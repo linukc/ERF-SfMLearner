@@ -85,7 +85,7 @@ def smooth_loss(pred_map):
         dx2, dxdy = gradient(dx)
         dydx, dy2 = gradient(dy)
         loss += (dx2.abs().mean() + dxdy.abs().mean() + dydx.abs().mean() + dy2.abs().mean())*weight
-        weight /= 2.3  # don't ask me why it works better
+        weight /= 2  # don't ask me why 2.3 works better for depth estimation
     return loss
 
 

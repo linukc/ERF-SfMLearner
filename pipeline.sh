@@ -5,4 +5,4 @@
 
 # общее количество файлов примерно 40к
 
-python3.7 train.py "/media/serlini/data3/Datasets/kitti_odometry/dataset_formatted" -b4 -m0.2 -s0.1 --epoch-size 3000 --sequence-length 3 --log-output --with-pose
+python3.7 train.py "/media/serlini/data3/Datasets/kitti_odometry/dataset_formatted" -b4 -m0 -s2.0 --epoch-size 1000 --sequence-length 5 --log-output --with-pose

@@ -1,6 +1,7 @@
 import argparse
 import time
 import csv
+import os
 
 import numpy as np
 import torch
@@ -16,6 +17,7 @@ from loss_functions import compute_depth_errors, compute_pose_errors
 from inverse_warp import pose_vec2mat
 from logger import TermLogger, AverageMeter
 from tensorboardX import SummaryWriter
+import wandb
 
 parser = argparse.ArgumentParser(description='Structure from Motion Learner training on KITTI and CityScapes Dataset',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -74,6 +76,11 @@ parser.add_argument('-f', '--training-output-freq', type=int,
                     help='frequence for outputting dispnet outputs and warped imgs at training for all scales. '
                          'if 0, will not output',
                     metavar='N', default=0)
+parser.add_argument('--save_path', default='.')
+parser.add_argument("--wandb_run_name")
+
+wandb.init(project='SfmLearner_rf', sync_tensorboard=True)
+
 
 best_error = -1
 n_iter = 0
@@ -83,12 +90,16 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 def main():
     global best_error, n_iter, device
     args = parser.parse_args()
+
+    wandb.run.name = args.wandb_run_name
+    wandb.run.save()
+
     if args.dataset_format == 'stacked':
         from datasets.stacked_sequence_folders import SequenceFolder
     elif args.dataset_format == 'sequential':
         from datasets.sequence_folders import SequenceFolder
     save_path = save_path_formatter(args, parser)
-    args.save_path = 'checkpoints'/save_path
+    args.save_path = os.path.join(args.save_path, 'checkpoints'/save_path)
     print('=> will save everything to {}'.format(args.save_path))
     args.save_path.makedirs_p()
     torch.manual_seed(args.seed)
@@ -221,41 +232,42 @@ def main():
         logger.train_writer.write(' * Avg Loss : {:.3f}'.format(train_loss))
 
         # evaluate on validation set
-        logger.reset_valid_bar()
-        if args.with_gt and args.with_pose:
-            errors, error_names = validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer)
-        elif args.with_gt:
-            errors, error_names = validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer)
-        else:
-            errors, error_names = validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer)
-        error_string = ', '.join('{} : {:.3f}'.format(name, error) for name, error in zip(error_names, errors))
-        logger.valid_writer.write(' * Avg {}'.format(error_string))
+        if epoch % 5 == 0:
+            logger.reset_valid_bar()
+            if args.with_gt and args.with_pose:
+                errors, error_names = validate_with_gt_pose(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer)
+            elif args.with_gt:
+                errors, error_names = validate_with_gt(args, val_loader, disp_net, epoch, logger, tb_writer)
+            else:
+                errors, error_names = validate_without_gt(args, val_loader, disp_net, pose_exp_net, epoch, logger, tb_writer)
+            error_string = ', '.join('{} : {:.3f}'.format(name, error) for name, error in zip(error_names, errors))
+            logger.valid_writer.write(' * Avg {}'.format(error_string))
 
-        for error, name in zip(errors, error_names):
-            tb_writer.add_scalar(name, error, epoch)
+            for error, name in zip(errors, error_names):
+                tb_writer.add_scalar(name, error, epoch)
 
-        # Up to you to chose the most relevant error to measure your model's performance, careful some measures are to maximize (such as a1,a2,a3)
-        decisive_error = errors[1]
-        if best_error < 0:
-            best_error = decisive_error
+            # Up to you to chose the most relevant error to measure your model's performance, careful some measures are to maximize (such as a1,a2,a3)
+            decisive_error = errors[1]
+            if best_error < 0:
+                best_error = decisive_error
 
-        # remember lowest error and save checkpoint
-        is_best = decisive_error < best_error
-        best_error = min(best_error, decisive_error)
-        save_checkpoint(
-            args.save_path, {
-                'epoch': epoch + 1,
-                'state_dict': disp_net.module.state_dict()
-            }, {
-                'epoch': epoch + 1,
-                'state_dict': pose_exp_net.module.state_dict()
-            },
-            is_best)
+            # remember lowest error and save checkpoint
+            is_best = decisive_error < best_error
+            best_error = min(best_error, decisive_error)
+            save_checkpoint(
+                args.save_path, {
+                    'epoch': epoch + 1,
+                    'state_dict': disp_net.module.state_dict()
+                }, {
+                    'epoch': epoch + 1,
+                    'state_dict': pose_exp_net.module.state_dict()
+                },
+                is_best)
 
-        with open(args.save_path/args.log_summary, 'a') as csvfile:
-            writer = csv.writer(csvfile, delimiter='\t')
-            writer.writerow([train_loss, decisive_error])
-    logger.epoch_bar.finish()
+            with open(args.save_path/args.log_summary, 'a') as csvfile:
+                writer = csv.writer(csvfile, delimiter='\t')
+                writer.writerow([train_loss, decisive_error])
+        logger.epoch_bar.finish()
 
 
 def train(args, train_loader, disp_net, pose_exp_net, optimizer, epoch_size, logger, tb_writer):

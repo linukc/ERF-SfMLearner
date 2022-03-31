@@ -267,7 +267,7 @@ def main():
             with open(args.save_path/args.log_summary, 'a') as csvfile:
                 writer = csv.writer(csvfile, delimiter='\t')
                 writer.writerow([train_loss, decisive_error])
-        logger.epoch_bar.finish()
+    logger.epoch_bar.finish()
 
 
 def train(args, train_loader, disp_net, pose_exp_net, optimizer, epoch_size, logger, tb_writer):

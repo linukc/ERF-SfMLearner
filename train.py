@@ -16,6 +16,9 @@ from loss_functions import compute_depth_errors, compute_pose_errors
 from inverse_warp import pose_vec2mat
 from logger import TermLogger, AverageMeter
 from tensorboardX import SummaryWriter
+import wandb
+
+wandb.init(project='SfmLearner_rf', sync_tensorboard=True)
 
 parser = argparse.ArgumentParser(description='Structure from Motion Learner training on KITTI and CityScapes Dataset',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -74,6 +77,8 @@ parser.add_argument('-f', '--training-output-freq', type=int,
                     help='frequence for outputting dispnet outputs and warped imgs at training for all scales. '
                          'if 0, will not output',
                     metavar='N', default=0)
+parser.add_argument('--save_path', default='.')
+
 
 best_error = -1
 n_iter = 0
@@ -88,7 +93,7 @@ def main():
     elif args.dataset_format == 'sequential':
         from datasets.sequence_folders import SequenceFolder
     save_path = save_path_formatter(args, parser)
-    args.save_path = 'checkpoints'/save_path
+    args.save_path = os.path.join(args.save_path, 'checkpoints'/save_path)
     print('=> will save everything to {}'.format(args.save_path))
     args.save_path.makedirs_p()
     torch.manual_seed(args.seed)

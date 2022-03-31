@@ -18,8 +18,6 @@ from logger import TermLogger, AverageMeter
 from tensorboardX import SummaryWriter
 import wandb
 
-wandb.init(project='SfmLearner_rf', sync_tensorboard=True)
-
 parser = argparse.ArgumentParser(description='Structure from Motion Learner training on KITTI and CityScapes Dataset',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -78,6 +76,10 @@ parser.add_argument('-f', '--training-output-freq', type=int,
                          'if 0, will not output',
                     metavar='N', default=0)
 parser.add_argument('--save_path', default='.')
+parser.add_argument("--wandb_run_name")
+
+wandb.init(project='SfmLearner_rf', sync_tensorboard=True)
+wandb.name = args.wandb_run_name
 
 
 best_error = -1

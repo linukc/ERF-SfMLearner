@@ -10,10 +10,16 @@ def conv(in_planes, out_planes, kernel_size=3, deformable=False, dilated=False):
     if dilated:
         dilation = 2
     c = nn.Conv2d if deformable==False else DeformableConv2d
-    return nn.Sequential(
-        c(in_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, stride=2, dilation=dilation),
-        nn.ReLU(inplace=True)
-    )
+    if not deformable:
+        return nn.Sequential(
+            c(in_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, stride=2, dilation=dilation),
+            nn.ReLU(inplace=True)
+        )
+    else:
+        return nn.Sequential(
+            c(in_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, stride=2),
+            nn.ReLU(inplace=True)
+        )
 
 
 def upconv(in_planes, out_planes):

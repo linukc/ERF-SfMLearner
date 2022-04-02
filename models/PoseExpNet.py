@@ -2,11 +2,16 @@ import torch
 import torch.nn as nn
 from torch import sigmoid
 from torch.nn.init import xavier_uniform_, zeros_
+from dcnv2.dcn import DeformableConv2d
 
 
-def conv(in_planes, out_planes, kernel_size=3):
+def conv(in_planes, out_planes, kernel_size=3, deformable=False, dilated=False):
+    dilation = 1
+    if dilated:
+        dilation = 3
+    c = nn.Conv2d if deformable==False else DeformableConv2d
     return nn.Sequential(
-        nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, stride=2),
+        c(in_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, stride=2, dilation=dilation),
         nn.ReLU(inplace=True)
     )
 
@@ -20,19 +25,19 @@ def upconv(in_planes, out_planes):
 
 class PoseExpNet(nn.Module):
 
-    def __init__(self, nb_ref_imgs=2, output_exp=False):
+    def __init__(self, nb_ref_imgs=2, output_exp=False, dcn=False, dilated=False):
         super(PoseExpNet, self).__init__()
         self.nb_ref_imgs = nb_ref_imgs
         self.output_exp = output_exp
 
         conv_planes = [16, 32, 64, 128, 256, 256, 256]
         self.conv1 = conv(3*(1+self.nb_ref_imgs), conv_planes[0], kernel_size=7)
-        self.conv2 = conv(conv_planes[0], conv_planes[1], kernel_size=5)
-        self.conv3 = conv(conv_planes[1], conv_planes[2])
-        self.conv4 = conv(conv_planes[2], conv_planes[3])
-        self.conv5 = conv(conv_planes[3], conv_planes[4])
-        self.conv6 = conv(conv_planes[4], conv_planes[5])
-        self.conv7 = conv(conv_planes[5], conv_planes[6])
+        self.conv2 = conv(conv_planes[0], conv_planes[1], kernel_size=5, dilated=dilated)
+        self.conv3 = conv(conv_planes[1], conv_planes[2], dilated=dilated)
+        self.conv4 = conv(conv_planes[2], conv_planes[3], dilated=dilated)
+        self.conv5 = conv(conv_planes[3], conv_planes[4], deformable=dcn, dilated=dilated)
+        self.conv6 = conv(conv_planes[4], conv_planes[5], deformable=dcn)
+        self.conv7 = conv(conv_planes[5], conv_planes[6], deformable=dcn)
 
         self.pose_pred = nn.Conv2d(conv_planes[6], 6*self.nb_ref_imgs, kernel_size=1, padding=0)
 

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import sigmoid
 from torch.nn.init import xavier_uniform_, zeros_
-from dcn import DeformableConv2d
+from models.dcn import DeformableConv2d
 
 
 def conv(in_planes, out_planes, kernel_size=3, deformable=False, dilated=False):

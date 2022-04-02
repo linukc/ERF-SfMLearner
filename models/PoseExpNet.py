@@ -8,7 +8,7 @@ from models.dcn import DeformableConv2d
 def conv(in_planes, out_planes, kernel_size=3, deformable=False, dilated=False):
     dilation = 1
     if dilated:
-        dilation = 3
+        dilation = 2
     c = nn.Conv2d if deformable==False else DeformableConv2d
     return nn.Sequential(
         c(in_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, stride=2, dilation=dilation),
@@ -33,9 +33,9 @@ class PoseExpNet(nn.Module):
         conv_planes = [16, 32, 64, 128, 256, 256, 256]
         self.conv1 = conv(3*(1+self.nb_ref_imgs), conv_planes[0], kernel_size=7)
         self.conv2 = conv(conv_planes[0], conv_planes[1], kernel_size=5, dilated=dilated)
-        self.conv3 = conv(conv_planes[1], conv_planes[2], dilated=dilated)
-        self.conv4 = conv(conv_planes[2], conv_planes[3], dilated=dilated)
-        self.conv5 = conv(conv_planes[3], conv_planes[4], deformable=dcn, dilated=dilated)
+        self.conv3 = conv(conv_planes[1], conv_planes[2], dilated=dilated, deformable=dcn)
+        self.conv4 = conv(conv_planes[2], conv_planes[3], dilated=dilated, deformable=dcn)
+        self.conv5 = conv(conv_planes[3], conv_planes[4], deformable=dcn)
         self.conv6 = conv(conv_planes[4], conv_planes[5], deformable=dcn)
         self.conv7 = conv(conv_planes[5], conv_planes[6], deformable=dcn)
 

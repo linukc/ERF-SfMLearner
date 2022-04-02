@@ -96,4 +96,4 @@ class PoseExpNet(nn.Module):
 
 
 m = PoseExpNet().cuda()
-summary(m, (9, 128, 416))
+summary(m, (9, 248, 75))

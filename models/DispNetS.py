@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.init import xavier_uniform_, zeros_
+from models.dcn import DeformableConv2d
 
 
 def downsample_conv(in_planes, out_planes, kernel_size=3):

@@ -65,7 +65,7 @@ class DispNetS(nn.Module):
         self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
         self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
         self.conv3 = downsample_conv(conv_planes[1], conv_planes[2], dfc_disp=dfc_disp, dilated_disp=dilated_disp)
-        self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp)
         self.conv5 = downsample_conv(conv_planes[3], conv_planes[4])
         self.conv6 = downsample_conv(conv_planes[4], conv_planes[5])
         self.conv7 = downsample_conv(conv_planes[5], conv_planes[6])

@@ -5,13 +5,26 @@ from torch.nn.init import xavier_uniform_, zeros_
 from models.dcn import DeformableConv2d
 
 
-def downsample_conv(in_planes, out_planes, kernel_size=3):
-    return nn.Sequential(
-        nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2),
+def downsample_conv(in_planes, out_planes, kernel_size=3, dfc_disp=False, dilated_disp=False):
+    if dfc_disp:
+        c = DeformableConv2d
+    else:
+        c = nn.Conv2d
+    if dilated_disp:
+
+        return nn.Sequential(
+        c(in_planes, out_planes, kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2, dilation=2),
         nn.ReLU(inplace=True),
-        nn.Conv2d(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2),
+        c(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, dilation=2),
         nn.ReLU(inplace=True)
-    )
+        )
+    else:
+        return nn.Sequential(
+        c(in_planes, out_planes, kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2),
+        nn.ReLU(inplace=True),
+        c(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2),
+        nn.ReLU(inplace=True)
+        )
 
 
 def predict_disp(in_planes):
@@ -42,17 +55,17 @@ def crop_like(input, ref):
 
 class DispNetS(nn.Module):
 
-    def __init__(self, alpha=10, beta=0.01):
+    def __init__(self, dfc_disp, dilated_disp, alpha=10, beta=0.01):
         super(DispNetS, self).__init__()
 
         self.alpha = alpha
         self.beta = beta
 
         conv_planes = [32, 64, 128, 256, 512, 512, 512]
-        self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7)
-        self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5)
-        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2])
-        self.conv4 = downsample_conv(conv_planes[2], conv_planes[3])
+        self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2], dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp, dilated_disp=dilated_disp)
         self.conv5 = downsample_conv(conv_planes[3], conv_planes[4])
         self.conv6 = downsample_conv(conv_planes[4], conv_planes[5])
         self.conv7 = downsample_conv(conv_planes[5], conv_planes[6])

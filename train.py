@@ -80,6 +80,8 @@ parser.add_argument('--save_path', default='.')
 parser.add_argument("--wandb_run_name")
 parser.add_argument("--enable_deformable_convolution", default=False)
 parser.add_argument("--enable_dilated_convolution", default=False)
+parser.add_argument("--dilated_disp", default=False)
+parser.add_argument("--dfc_disp", default=False)
 
 wandb.init(project='SfmLearner_rf', sync_tensorboard=True)
 
@@ -167,7 +169,7 @@ def main():
     # create model
     print("=> creating model")
 
-    disp_net = models.DispNetS().to(device)
+    disp_net = models.DispNetS(dilated_disp=args.dilated_disp, dfc_disp=args.dfc_disp).to(device)
     output_exp = args.mask_loss_weight > 0
     if not output_exp:
         print("=> no mask loss, PoseExpnet will only output pose")

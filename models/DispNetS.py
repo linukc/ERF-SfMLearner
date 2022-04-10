@@ -15,7 +15,7 @@ def downsample_conv(in_planes, out_planes, kernel_size=3, dfc_disp=False, dilate
         return nn.Sequential(
         c(in_planes, out_planes, kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2, dilation=2),
         nn.ReLU(inplace=True),
-        c(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2),
+        c(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, dilation=2),
         nn.ReLU(inplace=True)
         )
     else:
@@ -64,7 +64,7 @@ class DispNetS(nn.Module):
         conv_planes = [32, 64, 128, 256, 512, 512, 512]
         self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
         self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
-        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2], dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2], dfc_disp=dfc_disp)
         self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp)
         self.conv5 = downsample_conv(conv_planes[3], conv_planes[4])
         self.conv6 = downsample_conv(conv_planes[4], conv_planes[5])

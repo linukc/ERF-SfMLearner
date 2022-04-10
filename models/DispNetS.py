@@ -15,7 +15,7 @@ def downsample_conv(in_planes, out_planes, kernel_size=3, dfc_disp=False, dilate
         return nn.Sequential(
         c(in_planes, out_planes, kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2, dilation=2),
         nn.ReLU(inplace=True),
-        c(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2, dilation=2),
+        c(out_planes, out_planes, kernel_size=kernel_size, padding=(kernel_size-1)//2),
         nn.ReLU(inplace=True)
         )
     else:

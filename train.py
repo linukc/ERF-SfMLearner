@@ -80,6 +80,7 @@ parser.add_argument('--save_path', default='.')
 parser.add_argument("--wandb_run_name")
 parser.add_argument("--enable_deformable_convolution", default=False)
 parser.add_argument("--enable_dilated_convolution", default=False)
+parser.add_argument("--enable_pose_v2", default=False)
 parser.add_argument("--dilated_disp", default=False)
 parser.add_argument("--dfc_disp", default=False)
 
@@ -173,7 +174,15 @@ def main():
     output_exp = args.mask_loss_weight > 0
     if not output_exp:
         print("=> no mask loss, PoseExpnet will only output pose")
-    pose_exp_net = models.PoseExpNet(nb_ref_imgs=args.sequence_length - 1,
+
+    if args.enable_pose_v2:
+        pose_exp_net = models.PoseExpNet_v2(nb_ref_imgs=args.sequence_length - 1,
+                                     output_exp=args.mask_loss_weight > 0,
+                                     dcn=args.enable_deformable_convolution,
+                                     dilated=args.enable_dilated_convolution).to(device)
+    else:
+
+        pose_exp_net = models.PoseExpNet(nb_ref_imgs=args.sequence_length - 1,
                                      output_exp=args.mask_loss_weight > 0,
                                      dcn=args.enable_deformable_convolution,
                                      dilated=args.enable_dilated_convolution).to(device)

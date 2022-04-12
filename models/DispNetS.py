@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.init import xavier_uniform_, zeros_
 from models.dcn import DeformableConv2d
+from loguru import logger
 
 
 def downsample_conv(in_planes, out_planes, kernel_size=3, dfc_disp=False, dilated_disp=False):
@@ -57,6 +58,7 @@ class DispNetS(nn.Module):
 
     def __init__(self, dfc_disp, dilated_disp, alpha=10, beta=0.01):
         super(DispNetS, self).__init__()
+        logger.debug(f"loding DispNets with dfc_disp={dfc_sidp} and dilated_disp={dilated_disp}")
 
         self.alpha = alpha
         self.beta = beta

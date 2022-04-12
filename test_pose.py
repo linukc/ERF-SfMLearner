@@ -6,7 +6,7 @@ from path import Path
 import argparse
 from tqdm import tqdm
 
-from models import PoseExpNet
+from models import PoseExpNet, PoseExpNet_v2
 from inverse_warp import pose_vec2mat
 from skimage.transform import resize as imresize
 
@@ -26,6 +26,10 @@ parser.add_argument("--output-dir", default=None, type=str, help="Output directo
 parser.add_argument("--img-exts", default=['png', 'jpg', 'bmp'], nargs='*', type=str, help="images extensions to glob")
 parser.add_argument("--rotation-mode", default='euler', choices=['euler', 'quat'], type=str)
 
+parser.add_argument("--enable_deformable_convolution", default=False)
+parser.add_argument("--enable_dilated_convolution", default=False)
+parser.add_argument("--enable_pose_v2", default=False)
+
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
@@ -36,8 +40,19 @@ def main():
 
     weights = torch.load(args.pretrained_posenet)
     seq_length = int(weights['state_dict']['conv1.0.weight'].size(1)/3)
-    pose_net = PoseExpNet(nb_ref_imgs=seq_length - 1, output_exp=False).to(device)
-    pose_net.load_state_dict(weights['state_dict'], strict=False)
+
+    if args.enable_pose_v2:
+        pose_net = PoseExpNet_v2(nb_ref_imgs=seq_length - 1,
+                                     output_exp=False,
+                                     dcn=args.enable_deformable_convolution,
+                                     dilated=args.enable_dilated_convolution).to(device)
+    else:
+        pose_net = PoseExpNet(nb_ref_imgs=seq_length - 1,
+                                     output_exp=False,
+                                     dcn=args.enable_deformable_convolution,
+                                     dilated=args.enable_dilated_convolution).to(device)
+
+    pose_net.load_state_dict(weights['state_dict'])
 
     dataset_dir = Path(args.dataset_dir)
     framework = test_framework(dataset_dir, args.sequences, seq_length)

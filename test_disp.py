@@ -28,6 +28,9 @@ parser.add_argument("--gt-type", default='KITTI', type=str, help="GroundTruth da
 parser.add_argument("--gps", '-g', action='store_true',
                     help='if selected, will get displacement from GPS for KITTI. Otherwise, will integrate speed')
 parser.add_argument("--img-exts", default=['png', 'jpg', 'bmp'], nargs='*', type=str, help="images extensions to glob")
+parser.add_argument("--dilated_disp", default=False)
+parser.add_argument("--dfc_disp", default=False)
+
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -40,7 +43,7 @@ def main():
     elif args.gt_type == 'stillbox':
         from stillbox_eval.depth_evaluation_utils import test_framework_stillbox as test_framework
 
-    disp_net = DispNetS().to(device)
+    disp_net = DispNetS(dilated_disp=args.dilated_disp, dfc_disp=args.dfc_disp).to(device)
     weights = torch.load(args.pretrained_dispnet)
     disp_net.load_state_dict(weights['state_dict'])
     disp_net.eval()
@@ -53,7 +56,7 @@ def main():
         weights = torch.load(args.pretrained_posenet)
         seq_length = int(weights['state_dict']['conv1.0.weight'].size(1)/3)
         pose_net = PoseExpNet(nb_ref_imgs=seq_length - 1, output_exp=False).to(device)
-        pose_net.load_state_dict(weights['state_dict'], strict=False)
+        pose_net.load_state_dict(weights['state_dict'])
 
     dataset_dir = Path(args.dataset_dir)
     if args.dataset_list is not None:

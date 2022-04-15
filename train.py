@@ -178,7 +178,7 @@ def main():
     if args.enable_pose_v2:
         pose_exp_net = models.PoseExpNet_v2(nb_ref_imgs=args.sequence_length - 1,
                                      output_exp=args.mask_loss_weight > 0,
-                                     dcn=args.enable_deformable_convolution,
+                                     dcn=args.enable_pose_v2,
                                      dilated=args.enable_dilated_convolution).to(device)
     else:
 

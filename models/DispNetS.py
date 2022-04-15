@@ -58,7 +58,7 @@ class DispNetS(nn.Module):
 
     def __init__(self, dfc_disp, dilated_disp, alpha=10, beta=0.01):
         super(DispNetS, self).__init__()
-        logger.debug(f"loding DispNets with dfc_disp={dfc_sidp} and dilated_disp={dilated_disp}")
+        logger.debug(f"loding DispNets with dfc_disp={dfc_disp} and dilated_disp={dilated_disp}")
 
         self.alpha = alpha
         self.beta = beta

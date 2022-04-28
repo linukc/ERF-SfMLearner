@@ -39,12 +39,12 @@ def main():
     from kitti_eval.pose_evaluation_utils import test_framework_KITTI as test_framework
 
     weights = torch.load(args.pretrained_posenet)
-    seq_length = int(weights['state_dict']['conv1.0.weight'].size(1)/3)
-
+    #seq_length = int(weights['state_dict']['conv1.0.weight'].size(1)/3)
+    seq_length = 5
     if args.enable_pose_v2:
-        pose_net = PoseExpNet_v2(nb_ref_imgs=seq_length - 1,
+        pose_net = PoseExpNet_v2.PoseExpNet_v2(nb_ref_imgs=seq_length - 1,
                                      output_exp=False,
-                                     dcn=args.enable_deformable_convolution,
+                                     dcn=args.enable_pose_v2,
                                      dilated=args.enable_dilated_convolution).to(device)
     else:
         pose_net = PoseExpNet(nb_ref_imgs=seq_length - 1,

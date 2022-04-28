@@ -64,13 +64,13 @@ class DispNetS(nn.Module):
         self.beta = beta
 
         conv_planes = [32, 64, 128, 256, 512, 512, 512]
-        self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
-        self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
-        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2], dfc_disp=dfc_disp)
+        self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7)
+        self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5)
+        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2])
         self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp)
-        self.conv5 = downsample_conv(conv_planes[3], conv_planes[4])
-        self.conv6 = downsample_conv(conv_planes[4], conv_planes[5])
-        self.conv7 = downsample_conv(conv_planes[5], conv_planes[6])
+        self.conv5 = downsample_conv(conv_planes[3], conv_planes[4], dfc_disp=dfc_disp)
+        self.conv6 = downsample_conv(conv_planes[4], conv_planes[5], dfc_disp=dfc_disp)
+        self.conv7 = downsample_conv(conv_planes[5], conv_planes[6], dfc_disp=dfc_disp)
 
         upconv_planes = [512, 512, 256, 128, 64, 32, 16]
         self.upconv7 = upconv(conv_planes[6],   upconv_planes[0])

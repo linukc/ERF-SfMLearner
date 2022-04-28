@@ -30,6 +30,7 @@ parser.add_argument("--gps", '-g', action='store_true',
 parser.add_argument("--img-exts", default=['png', 'jpg', 'bmp'], nargs='*', type=str, help="images extensions to glob")
 parser.add_argument("--dilated_disp", default=False)
 parser.add_argument("--dfc_disp", default=False)
+parser.add_argument("--dfc_disp_v2", default=False)
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -43,7 +44,7 @@ def main():
     elif args.gt_type == 'stillbox':
         from stillbox_eval.depth_evaluation_utils import test_framework_stillbox as test_framework
 
-    disp_net = DispNetS(dilated_disp=args.dilated_disp, dfc_disp=args.dfc_disp).to(device)
+    disp_net = DispNetS(dilated_disp=args.dilated_disp, dfc_disp=args.dfc_disp, dfc_disp_v2=args.dfc_disp_v2).to(device)
     weights = torch.load(args.pretrained_dispnet)
     disp_net.load_state_dict(weights['state_dict'])
     disp_net.eval()

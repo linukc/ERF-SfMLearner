@@ -56,22 +56,32 @@ def crop_like(input, ref):
 
 class DispNetS(nn.Module):
 
-    def __init__(self, dfc_disp, dilated_disp, alpha=10, beta=0.01):
+    def __init__(self, dfc_disp, dilated_disp, dfc_disp_v2, alpha=10, beta=0.01):
         super(DispNetS, self).__init__()
-        logger.debug(f"loding DispNets with dfc_disp={dfc_disp} and dilated_disp={dilated_disp}")
+        logger.debug(f"loding DispNets with dfc_disp={dfc_disp} and dilated_disp={dilated_disp} and dfc_disp_v2={dfc_disp_v2}")
 
         self.alpha = alpha
         self.beta = beta
 
         conv_planes = [32, 64, 128, 256, 512, 512, 512]
-        self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7)
-        self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5)
-        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2])
+        if dfc_disp_v2:
+            dfc_disp = True
+        self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5, dfc_disp=dfc_disp, dilated_disp=dilated_disp)
+        self.conv3 = downsample_conv(conv_planes[1], conv_planes[2], dfc_disp=dfc_disp)
         self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp)
-        self.conv5 = downsample_conv(conv_planes[3], conv_planes[4], dfc_disp=dfc_disp)
-        self.conv6 = downsample_conv(conv_planes[4], conv_planes[5], dfc_disp=dfc_disp)
-        self.conv7 = downsample_conv(conv_planes[5], conv_planes[6], dfc_disp=dfc_disp)
-
+        self.conv5 = downsample_conv(conv_planes[3], conv_planes[4])
+        self.conv6 = downsample_conv(conv_planes[4], conv_planes[5])
+        self.conv7 = downsample_conv(conv_planes[5], conv_planes[6])
+        if dfc_disp_v2:
+            self.conv1 = downsample_conv(3,              conv_planes[0], kernel_size=7)
+            self.conv2 = downsample_conv(conv_planes[0], conv_planes[1], kernel_size=5)
+            self.conv3 = downsample_conv(conv_planes[1], conv_planes[2])
+            self.conv4 = downsample_conv(conv_planes[2], conv_planes[3], dfc_disp=dfc_disp)
+            self.conv5 = downsample_conv(conv_planes[3], conv_planes[4], dfc_disp=dfc_disp)
+            self.conv6 = downsample_conv(conv_planes[4], conv_planes[5], dfc_disp=dfc_disp)
+            self.conv7 = downsample_conv(conv_planes[5], conv_planes[6], dfc_disp=dfc_disp)
+        
         upconv_planes = [512, 512, 256, 128, 64, 32, 16]
         self.upconv7 = upconv(conv_planes[6],   upconv_planes[0])
         self.upconv6 = upconv(upconv_planes[0], upconv_planes[1])

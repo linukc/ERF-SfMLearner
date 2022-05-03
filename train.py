@@ -170,7 +170,7 @@ def main():
     # create model
     print("=> creating model")
 
-    disp_net = models.DispNetS(dilated_disp=args.dilated_disp, dfc_disp=args.dfc_disp).to(device)
+    disp_net = models.DispNetS(dilated_disp=args.dilated_disp, dfc_disp=args.dfc_disp, dfc_disp_v2=False).to(device)
     output_exp = args.mask_loss_weight > 0
     if not output_exp:
         print("=> no mask loss, PoseExpnet will only output pose")

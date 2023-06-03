@@ -1,4 +1,4 @@
-### 
+### ERF-SfMLearner: Extended receptive field for Structure from Motion Learner
 This codebase implements the system described in the paper *"Influence of Neural Network Receptive Field on Monocular Depth and Ego-Motion Estimation"* and bases on the [SfMLearner pytorch version](https://github.com/ClementPinard/SfmLearner-Pytorch).
 
 #### Load dataset
